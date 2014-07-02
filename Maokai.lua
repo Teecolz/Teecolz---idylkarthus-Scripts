@@ -86,10 +86,10 @@ function Variables()
   Qspeed = 1200
   Qdelay = 0.5
 
-  Wrange = 650
+  Wrange = 525
   Wwidth = nil 
   Wspeed = nil
-  Wdelay = 0.5
+  Wdelay = 0
 
   Erange = 1100
   Ewidth = 250 
@@ -97,7 +97,7 @@ function Variables()
   Edelay = 1.0
 
   Rrange = 625
-  Rwidth = 575 
+  Rwidth = 475 
   Rspeed = nil 
   Rdelay = 0.5
 end
@@ -493,11 +493,11 @@ function CheckEnemies() -- R logic that should work with new update
   EnemyRrange = false
   for i, enemy in ipairs(GetEnemyHeroes()) do
     if enemy and ValidTarget(enemy) then
-      if menu.combo.useR and Rready and not MaokaiROn and GetDistance(enemy) <= Rrange then
+      if menu.combo.useR and Rready and not MaokaiROn and GetDistance(enemy) <= Rwidth then
         CastSpell(_R)
         EnemyWrange = true
       end
-      if GetDistance(enemy) <= Rrange then EnemyRrange = true end
+      if GetDistance(enemy) <= Rwidth then EnemyRrange = true end
     end
   end
   if not EnemyRrange and MaokaiROn then CastSpell(_R) end
