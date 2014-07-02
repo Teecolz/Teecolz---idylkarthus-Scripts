@@ -44,6 +44,7 @@ local ts
 local levelSequence = {3, 1, 2, 1, 2, 4, 1, 2, 1, 2, 4, 2, 1, 3, 3, 4, 3, 3}
 local target
 local enemyTable = {}
+local MaokaiROn = false
 
 
 local TMTSlot, RAHSlot = nil, nil
@@ -104,7 +105,7 @@ end
 
 function Init()
   --[TargetSelector]--
-    ts      = TargetSelector(TARGET_LESS_CAST, 540, DAMAGE_MAGIC)
+    ts      = TargetSelector(TARGET_LESS_CAST, 1100, DAMAGE_MAGIC)
     ts.name = "Maokai"
   end
   
@@ -121,6 +122,7 @@ function Menu()
             menu.combo:addParam("useE", "Use E-Spell",  SCRIPT_PARAM_ONOFF, true)
             menu.combo:addParam("useR", "Use R-Spell",  SCRIPT_PARAM_ONOFF, true)
             menu.combo:addParam("minR", "Min Enemys for (R)", SCRIPT_PARAM_SLICE, 1, 0, 5, 0)
+            menu.combo:addParam("manaR", "Turn off R at % Mana", SCRIPT_PARAM_SLICE, 0, 0, 100)
 
           menu:addSubMenu("Maokai: Harass", "harass")
             menu.harass:addParam("harasskey", "Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
@@ -168,8 +170,10 @@ function OnTick()
   if Loaded then
     ts:update()
   end
+  ManaChecks()
   EnemyMinions:update()
   spell_check()
+  CheckEnemies()
   if menu.extra.autolevel then
     autoLevelSetSequence(levelSequence)
   end
@@ -226,12 +230,12 @@ function Combo()
         CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
       end
     end
-    if target and menu.combo.useR and GetDistanceSqr(target) <= Rrange^2 and Rready then
+--[[if target and menu.combo.useR and GetDistanceSqr(target) <= Rrange^2 and Rready then
       AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Rdelay, Rwidth, Rrange, Rspeed, myHero)
       if nTargets >= menu.combo.minR and GetDistance(AOECastPosition) <= Rrange and MainTargetHitChance >= 2 then
         CastSpell(_R, AOECastPosition.x, AOECastPosition.z)
       end
-    end
+    end]]
   end
 end
 
@@ -414,11 +418,11 @@ function killsteal()
     if GetDistance(enemy) < Erange then
       local qDmg = getDmg("Q", enemy, myHero)
       local eDmg = getDmg("E", enemy, myHero)
-      if enemy and GetDistanceSqr(enemy) <= Qrange^2 and enemy.health <= qDmg and menu.killsteal.killstealQ then
+      if enemy and not enemy.dead and GetDistanceSqr(enemy) <= Qrange^2 and enemy.health <= qDmg and menu.killsteal.killstealQ then
         local CastPosition, HitChance, Position = VP:GetLineCastPosition(enemy, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
         if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
       end
-      if enemy and GetDistanceSqr(enemy) <= Erange^2 and enemy.health <= eDmg and menu.killsteal.killstealE then
+      if enemy and not enemy.dead and GetDistanceSqr(enemy) <= Erange^2 and enemy.health <= eDmg and menu.killsteal.killstealE then
         AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(enemy, Edelay, Ewidth, Erange, Espeed, myHero)
         if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
           CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
@@ -471,4 +475,37 @@ function draw_Range_aftercombo()
 end
 
 
+function OnGainBuff(unit, buff)
+  if unit and unit.charName == myHero.charName and buff.name == "MaokaiDrain3" then
+     MaokaiROn = true
+     if menu.extra.debug then print("MaokaiROn") end
+  end
+end
 
+function OnLoseBuff(unit, buff)
+  if unit and unit.charName == myHero.charName and buff.name == "MaokaiDrain3" then
+     MaokaiROn = false
+     if menu.extra.debug then print("MaokaiROff") end
+  end
+end
+
+function CheckEnemies()
+  EnemyRrange = false
+  for i, enemy in ipairs(GetEnemyHeroes()) do
+    if enemy and ValidTarget(enemy) then
+      if menu.combo.useR and Rready and not MaokaiROn and GetDistance(enemy) <= Rrange then
+        CastSpell(_R)
+        EnemyWrange = true
+      end
+      if GetDistance(enemy) <= Rrange then EnemyRrange = true end
+    end
+  end
+  if not EnemyRrange and MaokaiROn then CastSpell(_R) end
+end
+
+function ManaChecks()
+
+  if MaokaiROn and myHero.mana/myHero.maxMana < menu.combo.manaR then 
+    CastSpell(_R)
+  end
+end
