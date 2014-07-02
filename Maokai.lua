@@ -495,7 +495,7 @@ function CheckEnemies() -- R logic that should work with new update
     if enemy and ValidTarget(enemy) then
       if menu.combo.useR and Rready and not MaokaiROn and GetDistance(enemy) <= Rwidth then
         CastSpell(_R)
-        EnemyWrange = true
+        EnemyRrange = true
       end
       if GetDistance(enemy) <= Rwidth then EnemyRrange = true end
     end
