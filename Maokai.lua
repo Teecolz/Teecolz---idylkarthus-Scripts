@@ -7,7 +7,7 @@ require 'VPrediction'
 --[AUTOUPDATER]--
 
 local version = "1.0"
-local author = "Teecolz"
+local author = "Teecolz, iDyLkarthus"
 local scriptName = "Maokai"
 local AUTOUPDATE = false
 local UPDATE_HOST = "raw.github.com"
