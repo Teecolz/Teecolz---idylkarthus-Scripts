@@ -505,7 +505,7 @@ end
 
 function ManaChecks()
 
-  if MaokaiROn and myHero.mana/myHero.maxMana < menu.combo.manaR then 
+  if MaokaiROn and myHero.mana/myHero.maxMana < menu.combo.manaR/100 then 
     CastSpell(_R)
   end
 end
