@@ -489,7 +489,7 @@ function OnLoseBuff(unit, buff)
   end
 end
 
-function CheckEnemies()
+function CheckEnemies() -- R logic that should work with new update
   EnemyRrange = false
   for i, enemy in ipairs(GetEnemyHeroes()) do
     if enemy and ValidTarget(enemy) then
