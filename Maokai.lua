@@ -92,8 +92,8 @@ function Variables()
 
   Erange = 1100
   Ewidth = 250 
-  Espeed = 1750 
-  Edelay = 2.0
+  Espeed = 1500 
+  Edelay = 1.0
 
   Rrange = 625
   Rwidth = 575 
