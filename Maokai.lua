@@ -7,7 +7,7 @@ require 'VPrediction'
 --[AUTOUPDATER]--
 
 local version = "1.0"
-local author = "Teecolz, iDyLkarthus"
+local author = "Teecolz"
 local scriptName = "Maokai"
 local AUTOUPDATE = false
 local UPDATE_HOST = "raw.github.com"
@@ -60,7 +60,7 @@ function OnLoad()
   iSOW  = SOW(VP)
   Menu()
   Init()
-  PrintChat("<font color=\"#78CCDB\"><b>" ..">> tDarius has been loaded")
+  PrintChat("<font color=\"#78CCDB\"><b>" ..">> Maokai has been loaded")
   Loaded = true
   Variables()
   JungVariables()
@@ -93,7 +93,7 @@ function Variables()
   Erange = 1100
   Ewidth = 250 
   Espeed = 1750 
-  Edelay = 0.5
+  Edelay = 2.0
 
   Rrange = 625
   Rwidth = 575 
@@ -104,7 +104,7 @@ end
 
 function Init()
   --[TargetSelector]--
-    ts      = TargetSelector(TARGET_LESS_CAST, Erange, DAMAGE_MAGIC)
+    ts      = TargetSelector(TARGET_LESS_CAST, 540, DAMAGE_MAGIC)
     ts.name = "Maokai"
   end
   
@@ -136,7 +136,7 @@ function Menu()
           menu:addSubMenu("Maokai: Jungle Clear", "jungle")
             menu.jungle:addParam("junglekey", "Jungle Clear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("Z"))
             menu.jungle:addParam("useQ", "Use Q-Spell", SCRIPT_PARAM_ONOFF, true)
-            menu.jungle:addParam("useE", "Use W-Spell", SCRIPT_PARAM_ONOFF, true)
+            menu.jungle:addParam("useE", "Use E-Spell", SCRIPT_PARAM_ONOFF, true)
 
           menu:addSubMenu("Maokai: Killsteal", "killsteal")
             menu.killsteal:addParam("killstealQ", "Use Q-Spell to Killsteal", SCRIPT_PARAM_ONOFF, true)
@@ -265,7 +265,7 @@ function LaneClear()
           local CastPosition, HitChance, Position = VP:GetLineCastPosition(minion, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
           if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
         end
-        if target and menu.lane.useE and GetDistanceSqr(minion) <= Erange^2 and Eready then
+        if minion and menu.lane.useE and GetDistanceSqr(minion) <= Erange^2 and Eready then
           AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(minion, Edelay, Ewidth, Erange, Espeed, myHero)
           if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
             CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
@@ -282,12 +282,12 @@ end
 function JungleClear()
   local JungleMob = GetJungleMob()
   if JungleMob ~= nil then
-    if menu.jungle.useQ and GetDistanceSqr(JungleMob) <= Qrange^2 and Qready then
+    if JungleMob and menu.jungle.useQ and GetDistanceSqr(JungleMob) <= Qrange^2 and Qready then
         local CastPosition, HitChance, Position = VP:GetLineCastPosition(JungleMob, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
       if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
     end
-    if target and menu.jungle.useE and GetDistanceSqr(JungleMob) <= Erange^2 and Eready then
-      AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(minion, Edelay, Ewidth, Erange, Espeed, myHero)
+    if JungleMob and menu.jungle.useE and GetDistanceSqr(JungleMob) <= Erange^2 and Eready then
+      AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(JungleMob, Edelay, Ewidth, Erange, Espeed, myHero)
       if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
         CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
       end
@@ -389,7 +389,7 @@ end
 function UnitAtTower(unit,offset)
   for i, turret in pairs(GetTurrets()) do
     if turret ~= nil then
-      if turret.team = myHero.team then
+      if turret.team == myHero.team then
         if GetDistance(unit, turret) <= turret.range+offset then
           return true
         end
@@ -400,9 +400,9 @@ function UnitAtTower(unit,offset)
 end
 
 function TurretStun()
-  for i, enemy in pairs(enemyTable) do
-    if UnitAtTower(enemy.object, 0)
-      CastSpell(_W, enemy.object)
+  for _, enemy in ipairs(GetEnemyHeroes()) do
+    if UnitAtTower(enemy, 0) and GetDistanceSqr(enemy) <= Wrange^2 then
+      CastSpell(_W, enemy)
     end
   end
 end
@@ -410,16 +410,16 @@ end
 -------------------------------------------------
 --[KillSteal]--
 function killsteal()
-  for i, enemy in pairs(enemyTable) do
-    if GetDistance(enemy.object) < Erange then
-      local qDmg = getDmg("Q", enemy.object, myHero)
-      local eDmg = getDmg("E", enemy.object, myHero)
-      if GetDistanceSqr(enemy.object) <= Qrange^2 and enemy.object.health <= qDmg and menu.killsteal.killstealQ then
-        local CastPosition, HitChance, Position = VP:GetLineCastPosition(enemy.object, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
+    for _, enemy in ipairs(GetEnemyHeroes()) do
+    if GetDistance(enemy) < Erange then
+      local qDmg = getDmg("Q", enemy, myHero)
+      local eDmg = getDmg("E", enemy, myHero)
+      if enemy and GetDistanceSqr(enemy) <= Qrange^2 and enemy.health <= qDmg and menu.killsteal.killstealQ then
+        local CastPosition, HitChance, Position = VP:GetLineCastPosition(enemy, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
         if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
       end
-      if GetDistanceSqr(enemy.object) <= Erange^2 and enemy.object.health <= eDmg and menu.killsteal.killstealE then
-        AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(enemy.object, Edelay, Ewidth, Erange, Espeed, myHero)
+      if enemy and GetDistanceSqr(enemy) <= Erange^2 and enemy.health <= eDmg and menu.killsteal.killstealE then
+        AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(enemy, Edelay, Ewidth, Erange, Espeed, myHero)
         if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
           CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
         end
@@ -471,33 +471,4 @@ function draw_Range_aftercombo()
 end
 
 
-function OnGainBuff(unit, buff)
-  if unit and unit.team ~= myHero.team and buff.name == "dariushemo" then
-    for i, enemy in pairs(enemyTable) do
-      if enemy.object.name == unit.name then
-        enemy.stack = 1
-      end
-    end
-  end
-  if menu.extra.debug then print(enemyTable) end
-end
 
-function OnLoseBuff(unit, buff)
-  if buff.name == "dariushemo" then
-    for i, enemy in pairs(enemyTable) do
-      if enemy.object.name == unit.name then
-        enemy.stack = 0
-      end
-    end
-  end
-end
-
-function OnUpdateBuff(unit, buff)
-  if buff.name == "dariushemo" then
-    for i, enemy in pairs(enemyTable) do
-      if enemy.object.name == unit.name then
-        enemy.stack = buff.stack
-      end
-    end
-  end
-end
