@@ -143,7 +143,7 @@ function Menu()
           menu:addSubMenu("Maokai: Killsteal", "killsteal")
             menu.killsteal:addParam("killstealQ", "Use Q-Spell to Killsteal", SCRIPT_PARAM_ONOFF, true)
             menu.killsteal:addParam("killstealE", "Use E-Spell to Killsteal", SCRIPT_PARAM_ONOFF, true)
-
+            menu.killsteal:addParam("killstealR", "Use R-Spell to Killsteal When its up", SCRIPT_PARAM_ONOFF, true)
           menu:addSubMenu("Maokai: Drawings", "draw")
             menu.draw:addParam("drawAA", "Draw AA Range", SCRIPT_PARAM_ONOFF, false)
             menu.draw:addParam("drawQ", "Draw Q Range",   SCRIPT_PARAM_ONOFF, true)
@@ -216,7 +216,7 @@ function Combo()
   local Enemies = GetEnemyHeroes
   local target  = ts.target
 
-  if target then
+  if target and not target.dead then
     if target and menu.combo.useQ and GetDistanceSqr(target) <= Qrange^2 and Qready then
       local CastPosition, HitChance, Position = VP:GetLineCastPosition(target, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
       if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
@@ -225,17 +225,12 @@ function Combo()
       CastSpell(_W, target)
     end
     if target and menu.combo.useE and GetDistanceSqr(target) <= Erange^2 and Eready then
-      AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Edelay, Ewidth, Erange, Espeed, myHero)
+      EspeedDist = 1500-GetDistance(target)
+      AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Edelay, Ewidth, Erange, EspeedDist, myHero)
       if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
         CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
       end
     end
---[[if target and menu.combo.useR and GetDistanceSqr(target) <= Rrange^2 and Rready then
-      AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Rdelay, Rwidth, Rrange, Rspeed, myHero)
-      if nTargets >= menu.combo.minR and GetDistance(AOECastPosition) <= Rrange and MainTargetHitChance >= 2 then
-        CastSpell(_R, AOECastPosition.x, AOECastPosition.z)
-      end
-    end]]
   end
 end
 
@@ -251,7 +246,8 @@ function Harass()
       if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
     end
     if target and menu.harass.useE and GetDistanceSqr(target) <= Erange^2 and Eready then
-      AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Edelay, Ewidth, Erange, Espeed, myHero)
+      EspeedDist = 1500 - GetDistance(target)
+      AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Edelay, Ewidth, Erange, EspeedDist, myHero)
       if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
         CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
       end
@@ -418,14 +414,21 @@ function killsteal()
     if GetDistance(enemy) < Erange then
       local qDmg = getDmg("Q", enemy, myHero)
       local eDmg = getDmg("E", enemy, myHero)
+      local rDmg = getDmg("R", enemy, myHero)
       if enemy and not enemy.dead and GetDistanceSqr(enemy) <= Qrange^2 and enemy.health <= qDmg and menu.killsteal.killstealQ then
         local CastPosition, HitChance, Position = VP:GetLineCastPosition(enemy, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
         if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
       end
       if enemy and not enemy.dead and GetDistanceSqr(enemy) <= Erange^2 and enemy.health <= eDmg and menu.killsteal.killstealE then
-        AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(enemy, Edelay, Ewidth, Erange, Espeed, myHero)
+        EspeedDist = 1+GetDistance(enemy)
+        AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(enemy, Edelay, Ewidth, Erange, EspeedDist, myHero)
         if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
           CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
+        end
+      end
+      if enemy and ValidTarget(enemy) and not enemy.dead then
+        if menu.killsteal.killstealR and Rready and MaokaiROn and GetDistanceSqr(enemy) <= Rwidth^2 and enemy.health <= rDmg then
+          CastSpell(_R)
         end
       end
     end
@@ -489,19 +492,25 @@ function OnLoseBuff(unit, buff)
   end
 end
 
+
 function CheckEnemies() -- R logic that should work with new update
-  EnemyRrange = false
-  for i, enemy in ipairs(GetEnemyHeroes()) do
-    if enemy and ValidTarget(enemy) then
-      if menu.combo.useR and Rready and not MaokaiROn and GetDistance(enemy) <= Rwidth then
-        CastSpell(_R)
-        EnemyRrange = true
-      end
-      if GetDistance(enemy) <= Rwidth then EnemyRrange = true end
-    end
+  EnemysInR = AreaEnemyCount(myHero, Rwidth)
+  if menu.combo.useR and Rready and not MaokaiROn and EnemysInR >= menu.combo.minR then
+    CastSpell(_R)
   end
-  if not EnemyRrange and MaokaiROn then CastSpell(_R) end
+  if AreaEnemyCount(myHero, Rwidth) == 0 and MaokaiROn then CastSpell(_R) end
 end
+
+function AreaEnemyCount(Spot, Range)
+  local count = 0
+  for _, enemy in pairs(GetEnemyHeroes()) do
+    if enemy and not enemy.dead and enemy.visible and GetDistance(Spot, enemy) <= Range then
+      count = count + 1
+    end
+  end            
+  return count
+end
+
 
 function ManaChecks()
 

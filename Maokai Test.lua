@@ -494,7 +494,7 @@ end
 
 function CheckEnemies() -- R logic that should work with new update
   EnemysInR = AreaEnemyCount(myHero, Rwidth)
-  if menu.combo.useR and Rready and not MaokaiROn and and EnemysInR > menu.combo.minR then
+  if menu.combo.useR and Rready and not MaokaiROn and and EnemysInR >= menu.combo.minR then
     CastSpell(_R)
   end
   if AreaEnemyCount(myHero, Rwidth-50) == 0 and MaokaiROn then CastSpell(_R) end
