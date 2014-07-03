@@ -145,7 +145,7 @@ function Menu()
             menu.killsteal:addParam("killstealE", "Use E-Spell to Killsteal", SCRIPT_PARAM_ONOFF, true)
             menu.killsteal:addParam("killstealR", "Use R-Spell to Killsteal When its up", SCRIPT_PARAM_ONOFF, true)
           menu:addSubMenu("Maokai: Drawings", "draw")
-            menu.draw:addParam("drawAA", "Draw AAA Range", SCRIPT_PARAM_ONOFF, false)
+            menu.draw:addParam("drawAA", "Draw AA Range", SCRIPT_PARAM_ONOFF, false)
             menu.draw:addParam("drawQ", "Draw Q Range",   SCRIPT_PARAM_ONOFF, true)
             menu.draw:addParam("drawW", "Draw W Range",   SCRIPT_PARAM_ONOFF, true)
             menu.draw:addParam("drawE", "Draw E Range",   SCRIPT_PARAM_ONOFF, true)
@@ -226,8 +226,7 @@ function Combo()
     end
     if target and menu.combo.useE and GetDistanceSqr(target) <= Erange^2 and Eready then
       EspeedDist = 1500-GetDistance(target)
-      EdelayDist = 2-(GetDistance(target)/500)
-      AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, EdelayDist, Ewidth, Erange, EspeedDist, myHero)
+      AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Edelay, Ewidth, Erange, EspeedDist, myHero)
       if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
         CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
       end
@@ -494,18 +493,23 @@ function OnLoseBuff(unit, buff)
 end
 
 function CheckEnemies() -- R logic that should work with new update
-  EnemyRrange = false
-  for i, enemy in ipairs(GetEnemyHeroes()) do
-    if enemy and ValidTarget(enemy) then
-      if menu.combo.useR and Rready and not MaokaiROn and GetDistanceSqr(enemy) <= Rwidth^2 then
-        CastSpell(_R)
-        EnemyRrange = true
-      end
-      if GetDistance(enemy) <= Rwidth-50 then EnemyRrange = true end
-    end
+  EnemysInR = AreaEnemyCount(myHero, Rwidth)
+  if menu.combo.useR and Rready and not MaokaiROn and and EnemysInR > menu.combo.minR then
+    CastSpell(_R)
   end
-  if not EnemyRrange and MaokaiROn then CastSpell(_R) end
+  if AreaEnemyCount(myHero, Rwidth-50) == 0 and MaokaiROn then CastSpell(_R) end
 end
+
+function AreaEnemyCount(Spot, Range)
+  local count = 0
+  for _, enemy in pairs(GetEnemyHeroes()) do
+    if enemy and not enemy.dead and enemy.visible and GetDistance(Spot, enemy) <= Range then
+      count = count + 1
+    end
+  end            
+  return count
+end
+
 
 function ManaChecks()
 
