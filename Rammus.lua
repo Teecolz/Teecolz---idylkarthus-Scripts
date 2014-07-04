@@ -28,12 +28,12 @@ function OnLoad()
   PrintChat("<font color=\"#78CCDB\"><b>" ..">> Rammus has been loaded")
   Loaded = true
   JungVariables()
-  EnemyMinions = minionManager(MINION_ENEMY, 425, myHero, MINION_SORT_HEALTH_ASC)
+  EnemyMinions = minionManager(MINION_ENEMY, 325, myHero, MINION_SORT_HEALTH_ASC)
 end
   
 function Init()
   --[TargetSelector]--
-    ts      = TargetSelector(TARGET_LESS_CAST, 540, DAMAGE_PHYSICAL)
+    ts      = TargetSelector(TARGET_LESS_CAST, 325, DAMAGE_PHYSICAL)
     ts.name = "Rammus"
 end
 
