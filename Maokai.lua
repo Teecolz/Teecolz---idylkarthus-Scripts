@@ -15,6 +15,60 @@ local UPDATE_PATH = "/Teecolz/Teecolz---idylkarthus-Scripts/blob/master/Maokai.l
 local UPDATE_FILE_PATH = SCRIPT_PATH.."Maokai.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
+DashList = {
+       ['Ahri']        = {true, spell = 'AhriTumble'},
+        ['Aatrox']      = {true, spell = 'AatroxQ'},
+        ['Akali']       = {true, spell = 'AkaliShadowDance'}, -- Targeted ability
+        ['Alistar']     = {true, spell = 'Headbutt'}, -- Targeted ability
+        ['Diana']       = {true, spell = 'DianaTeleport'}, -- Targeted ability
+        ['Gragas']      = {true, spell = 'GragasE'},
+        ['Graves']      = {true, spell = 'GravesMove'},
+        ['Hecarim']     = {true, spell = 'HecarimUlt'},
+        ['Irelia']      = {true, spell = 'IreliaGatotsu'}, -- Targeted ability
+        ['JarvanIV']    = {true, spell = 'jarvanAddition'}, -- Skillshot/Targeted ability
+        ['Jax']         = {true, spell = 'JaxLeapStrike'}, -- Targeted ability
+        ['Jayce']       = {true, spell = 'JayceToTheSkies'}, -- Targeted ability
+	['Katarina']	 = {true, spell = 'KatarinaE'},
+        ['Khazix']      = {true, spell = 'KhazixW'},
+        ['Leblanc']     = {true, spell = 'LeblancSlide'},
+        ['LeeSin']      = {true, spell = 'blindmonkqtwo'},
+        ['Leona']       = {true, spell = 'LeonaZenithBlade'},
+        ['Malphite']    = {true, spell = 'UFSlash'},
+        ['Maokai']      = {true, spell = 'MaokaiTrunkLine',}, -- Targeted ability	
+	['MasterYi']	=  {true, spell = 'AlphaStrike',}, -- Targeted
+        ['MonkeyKing']  = {true, spell = 'MonkeyKingNimbus'}, -- Targeted ability
+        ['Pantheon']    = {true, spell = 'PantheonW'}, -- Targeted ability
+        ['Pantheon']    = {true, spell = 'PantheonRJump'},
+        ['Pantheon']    = {true, spell = 'PantheonRFall' },
+        ['Poppy']       = {true, spell = 'PoppyHeroicCharge'}, -- Targeted ability
+        --['Quinn']       = {true, spell = 'QuinnE',                  range = 725,   projSpeed = 2000, }, -- Targeted ability
+        ['Renekton']    = {true, spell = 'RenektonSliceAndDice'},
+        ['Sejuani']     = {true, spell = 'SejuaniArcticAssault'},
+        ['Shen']        = {true, spell = 'ShenShadowDash'},
+        ['Tristana']    = {true, spell = 'RocketJump'},
+        ['Tryndamere']  = {true, spell = 'Slash'},
+        ['XinZhao']     = {true, spell = 'XenZhaoSweep'}, -- Targeted ability
+}
+StunList = {
+                { charName = "Katarina",        spellName = "KatarinaR" ,                  important = 0},
+                { charName = "Galio",           spellName = "GalioIdolOfDurand" ,          important = 0},
+                { charName = "FiddleSticks",    spellName = "Crowstorm" ,                  important = 1},
+                { charName = "FiddleSticks",    spellName = "DrainChannel" ,               important = 1},
+                { charName = "Nunu",            spellName = "AbsoluteZero" ,               important = 0},
+                { charName = "Shen",            spellName = "ShenStandUnited" ,            important = 0},
+                { charName = "Urgot",           spellName = "UrgotSwap2" ,                 important = 0},
+                { charName = "Malzahar",        spellName = "AlZaharNetherGrasp" ,         important = 0},
+                { charName = "Karthus",         spellName = "FallenOne" ,                  important = 0},
+                { charName = "Pantheon",        spellName = "PantheonRJump" ,              important = 0},
+                { charName = "Pantheon",        spellName = "PantheonRFall",               important = 0},
+                { charName = "Varus",           spellName = "VarusQ" ,                     important = 1},
+                { charName = "Caitlyn",         spellName = "CaitlynAceintheHole" ,        important = 1},
+                { charName = "MissFortune",     spellName = "MissFortuneBulletTime" ,      important = 1},
+                { charName = "Warwick",         spellName = "InfiniteDuress" ,             important = 0}
+}
+
+
+
 
 function AutoupdaterMsg(msg) print("<font color='#5F9EA0'><b>[".. scriptName .."] </font><font color='#cffffffff'> "..msg..".</font>") end
 if AUTOUPDATE then
@@ -155,6 +209,8 @@ function Menu()
           menu:addSubMenu("Maokai: Extras", "extra")
             menu.extra:addParam("autolevel", "AutoLevel Spells", SCRIPT_PARAM_ONOFF, false)
             menu.extra:addParam("autoW", "Auto W under Turrets", SCRIPT_PARAM_ONOFF, false)
+            menu.extra:addParam("gapClose", "Auto-Knockback Gapclosers", SCRIPT_PARAM_ONOFF, true)
+            menu.extra:addParam("stun", "Auto-Interrupt Important Spells", SCRIPT_PARAM_ONOFF, true)
             menu.extra:addParam("debug", "Debug", SCRIPT_PARAM_ONOFF, false)
 
       --[PermaShow]--
@@ -478,6 +534,33 @@ function draw_Range_aftercombo()
 end
 
 
+function OnProcessSpell(unit, spell)
+  if menu.extra.gapClose and Qready then
+    if unit.team ~= myHero.team then
+      local spellName = spell.name
+      if DashList[unit.charName] and spellName == DashList[unit.charName].spell and GetDistance(unit) < 2000 then
+        if spell.target ~= nil and spell.target.name == myHero.name or DashList[unit.charName].spell == 'blindmonkqtwo' then
+          local CastPosition, HitChance, Position = VP:GetLineCastPosition(unit, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
+          CastSpell(_Q, CastPosition.x, CastPosition.z)
+        end
+      end
+    end
+  end
+  if menu.extra.stun then
+    if unit.team ~= myHero.team and GetDistance(unit) < Wrange then
+      local spellName = spell.name
+      for i = 1, #StunList do
+        if unit.charName == StunList[i].charName and spellName == StunList[i].spellName then
+          CastSpell(_W, unit)
+        end
+      end
+    end	
+  end
+end
+
+
+
+
 function OnGainBuff(unit, buff)
   if unit and unit.charName == myHero.charName and buff.name == "MaokaiDrain3" then
      MaokaiROn = true
@@ -498,7 +581,9 @@ function CheckEnemies() -- R logic that should work with new update
   if menu.combo.useR and Rready and not MaokaiROn and EnemysInR >= menu.combo.minR then
     CastSpell(_R)
   end
-  if AreaEnemyCount(myHero, Rwidth) == 0 and MaokaiROn then CastSpell(_R) end
+  if AreaEnemyCount(myHero, Rwidth) == 0 and MaokaiROn then 
+		CastSpell(_R)
+	end
 end
 
 function AreaEnemyCount(Spot, Range)
