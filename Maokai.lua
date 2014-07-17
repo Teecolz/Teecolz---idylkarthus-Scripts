@@ -7,7 +7,7 @@ require 'Prodiction'
 
 --[AUTOUPDATER]--
 
-local version = "1.1"
+local version = "1.12"
 local author = "Teecolz"
 local scriptName = "Maokai"
 local AUTOUPDATE = true
@@ -330,7 +330,10 @@ function Harass()
         local CastPosition, HitChance, Position = VP:GetLineCastPosition(target, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
         if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
       else
-        ProdictQ:GetPredictionCallBack(target, CastQ)
+         local pos, info = Prodiction.GetPrediction(target, Qrange, Qspeed, Qdelay, Qwidth)
+         if pos then
+          CastSpell(_Q, pos.x, pos.z)
+         end
       end
     end
     if target and menu.combo.useW and GetDistanceSqr(target) <= Wrange^2 and Wready then
@@ -343,7 +346,10 @@ function Harass()
         if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
           CastSpell(_E, AOECastPosition.x, AOECastPosition.z) end
       else
-        ProdictE:GetPredictionCallBack(target, CastE)
+         local pos, info = Prodiction.GetPrediction(target, Erange, Espeed, Edelay, Ewidth)
+         if pos then
+          CastSpell(_E, pos.x, pos.z)
+         end
       end
     end
 end
