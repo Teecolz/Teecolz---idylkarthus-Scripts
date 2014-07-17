@@ -3,13 +3,14 @@ if myHero.charName ~= "Maokai" then return end
 
 require 'SOW'
 require 'VPrediction'
+require 'Prodiction'
 
 --[AUTOUPDATER]--
 
-local version = "1.0"
+local version = "1.1"
 local author = "Teecolz"
 local scriptName = "Maokai"
-local AUTOUPDATE = false
+local AUTOUPDATE = true
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Teecolz/Teecolz---idylkarthus-Scripts/blob/master/Maokai.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH.."Maokai.lua"
@@ -100,6 +101,9 @@ local target
 local enemyTable = {}
 local MaokaiROn = false
 
+local Prodict
+local ProdictE, ProdictQ
+
 
 local TMTSlot, RAHSlot = nil, nil
 local TMTREADY, RAHREADY = false, false
@@ -130,6 +134,12 @@ function OnLoad()
     end
   end
 end
+
+    if VIP_USER then
+        Prodict = ProdictManager.GetInstance()
+        ProdictQ = Prodict:AddProdictionObject(_Q, Qrange, Qspeed, Qdelay, Qwidth)
+        ProdictE = Prodict:AddProdictionObject(_E, Erange, Espeed, Edelay, Ewidth)
+    end
 
 function Variables()
 
@@ -208,6 +218,7 @@ function Menu()
 
           menu:addSubMenu("Maokai: Extras", "extra")
             menu.extra:addParam("autolevel", "AutoLevel Spells", SCRIPT_PARAM_ONOFF, false)
+            menu.extra:addParam("prediction", "Prodiction = ON, VPred = OFF", SCRIPT_PARAM_ONOFF, true)
             menu.extra:addParam("autoW", "Auto W under Turrets", SCRIPT_PARAM_ONOFF, false)
             menu.extra:addParam("gapClose", "Auto-Knockback Gapclosers", SCRIPT_PARAM_ONOFF, true)
             menu.extra:addParam("stun", "Auto-Interrupt Important Spells", SCRIPT_PARAM_ONOFF, true)
@@ -234,6 +245,8 @@ function OnTick()
     autoLevelSetSequence(levelSequence)
   end
   iSOW:EnableAttacks()
+  
+  target = ts.target
 
   if menu.combo.combokey then
     Combo()
@@ -274,17 +287,32 @@ function Combo()
 
   if target and not target.dead then
     if target and menu.combo.useQ and GetDistanceSqr(target) <= Qrange^2 and Qready then
-      local CastPosition, HitChance, Position = VP:GetLineCastPosition(target, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
-      if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
+      if not menu.extra.prediction then
+        local CastPosition, HitChance, Position = VP:GetLineCastPosition(target, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
+        if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
+      else
+         local pos, info = Prodiction.GetPrediction(target, Qrange, Qspeed, Qdelay, Qwidth)
+         if pos then
+          CastSpell(_Q, pos.x, pos.z)
+         end
+      end
+            
+        
     end
     if target and menu.combo.useW and GetDistanceSqr(target) <= Wrange^2 and Wready then
       CastSpell(_W, target)
     end
     if target and menu.combo.useE and GetDistanceSqr(target) <= Erange^2 and Eready then
-      EspeedDist = 1500-GetDistance(target)
-      AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Edelay, Ewidth, Erange, EspeedDist, myHero)
-      if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
-        CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
+      if not menu.extra.prediction then
+        EspeedDist = 1500-GetDistance(target)
+        AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Edelay, Ewidth, Erange, EspeedDist, myHero)
+        if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
+          CastSpell(_E, AOECastPosition.x, AOECastPosition.z) end
+      else
+         local pos, info = Prodiction.GetPrediction(target, Erange, Espeed, Edelay, Ewidth)
+         if pos then
+          CastSpell(_E, pos.x, pos.z)
+         end
       end
     end
   end
@@ -298,14 +326,24 @@ function Harass()
   local target = ts.target
   if menu.harass.mana > (myHero.mana / myHero.maxMana) * 100 then return end
     if target and menu.harass.useQ and GetDistanceSqr(target) <= Qrange^2 and Qready then
-      local CastPosition, HitChance, Position = VP:GetLineCastPosition(target, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
-      if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
+      if not menu.extra.prediction then
+        local CastPosition, HitChance, Position = VP:GetLineCastPosition(target, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
+        if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
+      else
+        ProdictQ:GetPredictionCallBack(target, CastQ)
+      end
     end
-    if target and menu.harass.useE and GetDistanceSqr(target) <= Erange^2 and Eready then
-      EspeedDist = 1500 - GetDistance(target)
-      AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Edelay, Ewidth, Erange, EspeedDist, myHero)
-      if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
-        CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
+    if target and menu.combo.useW and GetDistanceSqr(target) <= Wrange^2 and Wready then
+      CastSpell(_W, target)
+    end
+    if target and menu.combo.useE and GetDistanceSqr(target) <= Erange^2 and Eready then
+      if not menu.extra.prediction then
+        EspeedDist = 1500-GetDistance(target)
+        AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Edelay, Ewidth, Erange, EspeedDist, myHero)
+        if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
+          CastSpell(_E, AOECastPosition.x, AOECastPosition.z) end
+      else
+        ProdictE:GetPredictionCallBack(target, CastE)
       end
     end
 end
