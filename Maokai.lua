@@ -9,12 +9,32 @@ require 'Prodiction'
 
 local version = "1.13"
 local author = "Teecolz"
-local scriptName = "Maokai"
+
 local AUTOUPDATE = true
-local UPDATE_HOST = "raw.github.com"
-local UPDATE_PATH = "/Teecolz/Teecolz---idylkarthus-Scripts/blob/master/Maokai.lua".."?rand="..math.random(1,10000)
-local UPDATE_FILE_PATH = SCRIPT_PATH.."Maokai.lua"
-local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
+local SCRIPT_NAME = "Maokai"
+local SOURCELIB_URL = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua"
+local SOURCELIB_PATH = LIB_PATH.."SourceLib.lua"
+if FileExist(SOURCELIB_PATH) then
+  require("SourceLib")
+else
+  DOWNLOADING_SOURCELIB = true
+  DownloadFile(SOURCELIB_URL, SOURCELIB_PATH, function() print("Required libraries downloaded successfully, please reload") end)
+end
+
+if DOWNLOADING_SOURCELIB then print("Downloading required libraries, please wait...") return end
+
+if AUTOUPDATE then
+  SourceUpdater(SCRIPT_NAME, version, "raw.github.com", "/teecolz/Scripts/master/"..SCRIPT_NAME..".lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, "/Teecolz/Teecolz---idylkarthus-Scripts/master/"..SCRIPT_NAME..".version"):CheckUpdate()
+end
+
+local RequireI = Require("SourceLib")
+RequireI:Add("vPrediction", "https://raw.github.com/Hellsing/BoL/master/common/VPrediction.lua")
+RequireI:Add("SOW", "https://raw.github.com/Hellsing/BoL/master/common/SOW.lua")
+RequireI:Add("Prodiction", "https://bitbucket.org/Klokje/public-klokjes-bol-scripts/raw/ec830facccefb3b52212dba5696c08697c3c2854/Test/Prodiction/Prodiction.lua")
+
+RequireI:Check()
+
+if RequireI.downloadNeeded == true then return end
 
 DashList = {
        ['Ahri']        = {true, spell = 'AhriTumble'},
@@ -67,28 +87,6 @@ StunList = {
                 { charName = "MissFortune",     spellName = "MissFortuneBulletTime" ,      important = 1},
                 { charName = "Warwick",         spellName = "InfiniteDuress" ,             important = 0}
 }
-
-
-
-
-function AutoupdaterMsg(msg) print("<font color='#5F9EA0'><b>[".. scriptName .."] </font><font color='#cffffffff'> "..msg..".</font>") end
-if AUTOUPDATE then
-  local ServerData = GetWebResult(UPDATE_HOST, "/Teecolz/Teecolz---idylkarthus-Scripts/blob/master/Maokai.version")
-  if ServerData then
-    ServerVersion = type(tonumber(ServerData)) == "number" and tonumber(ServerData) or nil
-    if ServerVersion then
-      if tonumber(version) < ServerVersion then
-        AutoupdaterMsg("New version available"..ServerVersion)
-        AutoupdaterMsg("Updating, please don't press F9")
-        DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end) end, 3)
-      else
-        AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
-      end
-    end
-  else
-    AutoupdaterMsg("Error downloading version info")
-  end
-end
 
 -------------------------------------------------
 -------------------------------------------------
