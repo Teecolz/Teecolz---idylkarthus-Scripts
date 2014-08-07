@@ -7,7 +7,7 @@ require 'Prodiction'
 
 --[AUTOUPDATER]--
 
-local version = "1.12"
+local version = "1.13"
 local author = "Teecolz"
 local scriptName = "Maokai"
 local AUTOUPDATE = true
