@@ -7,7 +7,7 @@ require 'Prodiction'
 
 --[AUTOUPDATER]--
 
-local version = "1.13"
+local version = "1.14"
 local author = "Teecolz"
 
 local AUTOUPDATE = true
@@ -49,14 +49,14 @@ DashList = {
         ['JarvanIV']    = {true, spell = 'jarvanAddition'}, -- Skillshot/Targeted ability
         ['Jax']         = {true, spell = 'JaxLeapStrike'}, -- Targeted ability
         ['Jayce']       = {true, spell = 'JayceToTheSkies'}, -- Targeted ability
-	['Katarina']	 = {true, spell = 'KatarinaE'},
+  ['Katarina']   = {true, spell = 'KatarinaE'},
         ['Khazix']      = {true, spell = 'KhazixW'},
         ['Leblanc']     = {true, spell = 'LeblancSlide'},
         ['LeeSin']      = {true, spell = 'blindmonkqtwo'},
         ['Leona']       = {true, spell = 'LeonaZenithBlade'},
         ['Malphite']    = {true, spell = 'UFSlash'},
-        ['Maokai']      = {true, spell = 'MaokaiTrunkLine',}, -- Targeted ability	
-	['MasterYi']	=  {true, spell = 'AlphaStrike',}, -- Targeted
+        ['Maokai']      = {true, spell = 'MaokaiTrunkLine',}, -- Targeted ability 
+  ['MasterYi']  =  {true, spell = 'AlphaStrike',}, -- Targeted
         ['MonkeyKing']  = {true, spell = 'MonkeyKingNimbus'}, -- Targeted ability
         ['Pantheon']    = {true, spell = 'PantheonW'}, -- Targeted ability
         ['Pantheon']    = {true, spell = 'PantheonRJump'},
@@ -596,7 +596,7 @@ function OnProcessSpell(unit, spell)
           CastSpell(_W, unit)
         end
       end
-    end	
+    end 
   end
 end
 
@@ -623,9 +623,6 @@ function CheckEnemies() -- R logic that should work with new update
   if menu.combo.useR and Rready and not MaokaiROn and EnemysInR >= menu.combo.minR then
     CastSpell(_R)
   end
-  if AreaEnemyCount(myHero, Rwidth) == 0 and MaokaiROn then 
-		CastSpell(_R)
-	end
 end
 
 function AreaEnemyCount(Spot, Range)
