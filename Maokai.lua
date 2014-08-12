@@ -7,7 +7,7 @@ require 'Prodiction'
 
 --[AUTOUPDATER]--
 
-local version = "1.14"
+local version = "1.15"
 local author = "Teecolz"
 
 local AUTOUPDATE = true
@@ -592,7 +592,8 @@ function OnProcessSpell(unit, spell)
       local spellName = spell.name
       for i = 1, #StunList do
         if unit.charName == StunList[i].charName and spellName == StunList[i].spellName then
-          CastSpell(_W, unit)
+          local CastPosition, HitChance, Position = VP:GetLineCastPosition(unit, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
+          CastSpell(_Q, CastPosition.x, CastPosition.z)
         end
       end
     end 
