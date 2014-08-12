@@ -49,7 +49,6 @@ DashList = {
         ['JarvanIV']    = {true, spell = 'jarvanAddition'}, -- Skillshot/Targeted ability
         ['Jax']         = {true, spell = 'JaxLeapStrike'}, -- Targeted ability
         ['Jayce']       = {true, spell = 'JayceToTheSkies'}, -- Targeted ability
-  ['Katarina']   = {true, spell = 'KatarinaE'},
         ['Khazix']      = {true, spell = 'KhazixW'},
         ['Leblanc']     = {true, spell = 'LeblancSlide'},
         ['LeeSin']      = {true, spell = 'blindmonkqtwo'},
