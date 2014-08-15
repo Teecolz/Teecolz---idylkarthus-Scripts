@@ -4,10 +4,11 @@ if myHero.charName ~= "Maokai" then return end
 require 'SOW'
 require 'VPrediction'
 require 'Prodiction'
+require 'Sourcelib'
 
 --[AUTOUPDATER]--
 
-local version = "1.15"
+local version = "2.0"
 local author = "Teecolz"
 
 local AUTOUPDATE = true
@@ -24,7 +25,7 @@ end
 if DOWNLOADING_SOURCELIB then print("Downloading required libraries, please wait...") return end
 
 if AUTOUPDATE then
-  SourceUpdater(SCRIPT_NAME, version, "raw.github.com", "/teecolz/Scripts/master/"..SCRIPT_NAME..".lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, "/Teecolz/Teecolz---idylkarthus-Scripts/master/"..SCRIPT_NAME..".version"):CheckUpdate()
+  SourceUpdater(SCRIPT_NAME, version, "raw.github.com", "/Teecolz/Teecolz---idylkarthus-Scripts/blob/master/"..SCRIPT_NAME..".lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME, "/Teecolz/Teecolz---idylkarthus-Scripts/master/"..SCRIPT_NAME..".version"):CheckUpdate()
 end
 
 local RequireI = Require("SourceLib")
@@ -36,12 +37,26 @@ RequireI:Check()
 
 if RequireI.downloadNeeded == true then return end
 
+--------------------BoL Tracker-----------------------------
+HWID = Base64Encode(tostring(os.getenv("PROCESSOR_IDENTIFIER")..os.getenv("USERNAME")..os.getenv("COMPUTERNAME")..os.getenv("PROCESSOR_LEVEL")..os.getenv("PROCESSOR_REVISION")))
+-- DO NOT CHANGE. This is set to your proper ID.
+id = 15
+ScriptName = "Maokai"
+
+-- Thank you to Roach and Bilbao for the support!
+assert(load(Base64Decode("G0x1YVIAAQQEBAgAGZMNChoKAAAAAAAAAAAAAQIDAAAAJQAAAAgAAIAfAIAAAQAAAAQKAAAAVXBkYXRlV2ViAAEAAAACAAAADAAAAAQAETUAAAAGAUAAQUEAAB2BAAFGgUAAh8FAAp0BgABdgQAAjAHBAgFCAQBBggEAnUEAAhsAAAAXwAOAjMHBAgECAgBAAgABgUICAMACgAEBgwIARsNCAEcDwwaAA4AAwUMDAAGEAwBdgwACgcMDABaCAwSdQYABF4ADgIzBwQIBAgQAQAIAAYFCAgDAAoABAYMCAEbDQgBHA8MGgAOAAMFDAwABhAMAXYMAAoHDAwAWggMEnUGAAYwBxQIBQgUAnQGBAQgAgokIwAGJCICBiIyBxQKdQQABHwCAABcAAAAECAAAAHJlcXVpcmUABAcAAABzb2NrZXQABAcAAABhc3NlcnQABAQAAAB0Y3AABAgAAABjb25uZWN0AAQQAAAAYm9sLXRyYWNrZXIuY29tAAMAAAAAAABUQAQFAAAAc2VuZAAEGAAAAEdFVCAvcmVzdC9uZXdwbGF5ZXI/aWQ9AAQHAAAAJmh3aWQ9AAQNAAAAJnNjcmlwdE5hbWU9AAQHAAAAc3RyaW5nAAQFAAAAZ3N1YgAEDQAAAFteMC05QS1aYS16XQAEAQAAAAAEJQAAACBIVFRQLzEuMA0KSG9zdDogYm9sLXRyYWNrZXIuY29tDQoNCgAEGwAAAEdFVCAvcmVzdC9kZWxldGVwbGF5ZXI/aWQ9AAQCAAAAcwAEBwAAAHN0YXR1cwAECAAAAHBhcnRpYWwABAgAAAByZWNlaXZlAAQDAAAAKmEABAYAAABjbG9zZQAAAAAAAQAAAAAAEAAAAEBvYmZ1c2NhdGVkLmx1YQA1AAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAMAAAADAAAAAwAAAAMAAAAEAAAABAAAAAUAAAAFAAAABQAAAAYAAAAGAAAABwAAAAcAAAAHAAAABwAAAAcAAAAHAAAABwAAAAgAAAAHAAAABQAAAAgAAAAJAAAACQAAAAkAAAAKAAAACgAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAAMAAAACwAAAAkAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAGAAAAAgAAAGEAAAAAADUAAAACAAAAYgAAAAAANQAAAAIAAABjAAAAAAA1AAAAAgAAAGQAAAAAADUAAAADAAAAX2EAAwAAADUAAAADAAAAYWEABwAAADUAAAABAAAABQAAAF9FTlYAAQAAAAEAEAAAAEBvYmZ1c2NhdGVkLmx1YQADAAAADAAAAAIAAAAMAAAAAAAAAAEAAAAFAAAAX0VOVgA="), nil, "bt", _ENV))()
+-------------------------------------------------
+
 DashList = {
-       ['Ahri']        = {true, spell = 'AhriTumble'},
+        ['Ahri']        = {true, spell = 'AhriTumble'},
         ['Aatrox']      = {true, spell = 'AatroxQ'},
         ['Akali']       = {true, spell = 'AkaliShadowDance'}, -- Targeted ability
         ['Alistar']     = {true, spell = 'Headbutt'}, -- Targeted ability
+        ['Corki']       = {true, spell = 'CarpetBomb'},
         ['Diana']       = {true, spell = 'DianaTeleport'}, -- Targeted ability
+        ['Elise']       = {true, spell = 'EliseSpiderQCast'}, -- Targeted ability
+        ['Fiora']       = {true, spell = 'FioraQ'}, -- Targeted ability
+        ['Fizz']      = {true, spell = 'FizzPiercingStrike'}, -- Targeted ability
         ['Gragas']      = {true, spell = 'GragasE'},
         ['Graves']      = {true, spell = 'GravesMove'},
         ['Hecarim']     = {true, spell = 'HecarimUlt'},
@@ -49,26 +64,36 @@ DashList = {
         ['JarvanIV']    = {true, spell = 'jarvanAddition'}, -- Skillshot/Targeted ability
         ['Jax']         = {true, spell = 'JaxLeapStrike'}, -- Targeted ability
         ['Jayce']       = {true, spell = 'JayceToTheSkies'}, -- Targeted ability
+        ['Kassadin']    = {true, spell = 'RiftWalk'},
         ['Khazix']      = {true, spell = 'KhazixW'},
         ['Leblanc']     = {true, spell = 'LeblancSlide'},
         ['LeeSin']      = {true, spell = 'blindmonkqtwo'},
         ['Leona']       = {true, spell = 'LeonaZenithBlade'},
+        ['Lucian']      = {true, spell = 'LucianE'},
         ['Malphite']    = {true, spell = 'UFSlash'},
         ['Maokai']      = {true, spell = 'MaokaiTrunkLine',}, -- Targeted ability 
-  ['MasterYi']  =  {true, spell = 'AlphaStrike',}, -- Targeted
+    ['MasterYi']    = {true, spell = 'AlphaStrike',}, -- Targeted
         ['MonkeyKing']  = {true, spell = 'MonkeyKingNimbus'}, -- Targeted ability
+        ['Nidalee']     = {true, spell = 'Pounce'},
         ['Pantheon']    = {true, spell = 'PantheonW'}, -- Targeted ability
         ['Pantheon']    = {true, spell = 'PantheonRJump'},
-        ['Pantheon']    = {true, spell = 'PantheonRFall' },
+        ['Pantheon']    = {true, spell = 'PantheonRFall'},
         ['Poppy']       = {true, spell = 'PoppyHeroicCharge'}, -- Targeted ability
-        --['Quinn']       = {true, spell = 'QuinnE',                  range = 725,   projSpeed = 2000, }, -- Targeted ability
+      --['Quinn']       = {true, spell = 'QuinnE',                  range = 725,   projSpeed = 2000, }, -- Targeted ability
+        ['Rammus']      = {true, spell = 'PowerBall'},
         ['Renekton']    = {true, spell = 'RenektonSliceAndDice'},
+        ['Riven']     = {true, spell = 'RivenFeint'},
         ['Sejuani']     = {true, spell = 'SejuaniArcticAssault'},
+        ['Shyvana']     = {true, spell = 'ShyvanaTransformCast'},
         ['Shen']        = {true, spell = 'ShenShadowDash'},
+        ['Talon']       = {true, spell = 'TalonCutthroat'},
         ['Tristana']    = {true, spell = 'RocketJump'},
         ['Tryndamere']  = {true, spell = 'Slash'},
+        ['Vi']      = {true, spell = 'ViQ'},
         ['XinZhao']     = {true, spell = 'XenZhaoSweep'}, -- Targeted ability
+        ['Yasuo']       = {true, spell = 'YasuoDashWrapper'} -- Targeted ability
 }
+
 StunList = {
                 { charName = "Katarina",        spellName = "KatarinaR" ,                  important = 0},
                 { charName = "Galio",           spellName = "GalioIdolOfDurand" ,          important = 0},
@@ -95,7 +120,6 @@ local menu
 local ts
 local levelSequence = {3, 1, 2, 1, 2, 4, 1, 2, 1, 2, 4, 2, 1, 3, 3, 4, 3, 3}
 local target
-local enemyTable = {}
 local MaokaiROn = false
 
 local Prodict
@@ -104,7 +128,6 @@ local ProdictE, ProdictQ
 
 local TMTSlot, RAHSlot = nil, nil
 local TMTREADY, RAHREADY = false, false
---[Spell Data]--
 local Qready, Wready, Eready, Rready = false, false, false, false
 
 
@@ -116,27 +139,19 @@ function OnLoad()
   iSOW  = SOW(VP)
   Menu()
   Init()
-  PrintChat("<font color=\"#78CCDB\"><b>" ..">> Maokai has been loaded")
+  PrintChat("<font color=\"#78CCDB\"><b>" ..">> Maokai by Teecolz has been loaded")
   Loaded = true
   Variables()
   JungVariables()
   EnemyMinions = minionManager(MINION_ENEMY, Erange, myHero, MINION_SORT_HEALTH_ASC)
-  
-  for i, enemy in pairs(GetEnemyHeroes()) do
-    if enemy then 
-      local a = {}
-      a.object = enemy
-      a.stack = 0
-      table.insert(enemyTable, a)
-    end
-  end
+  UpdateWeb(true, ScriptName, id, HWID)
 end
 
-    if VIP_USER then
+    --[[if VIP_USER then
         Prodict = ProdictManager.GetInstance()
         ProdictQ = Prodict:AddProdictionObject(_Q, Qrange, Qspeed, Qdelay, Qwidth)
         ProdictE = Prodict:AddProdictionObject(_E, Erange, Espeed, Edelay, Ewidth)
-    end
+    end]]
 
 function Variables()
 
@@ -165,9 +180,7 @@ end
 
 
 function Init()
-  --[TargetSelector]--
     ts      = TargetSelector(TARGET_LESS_CAST, 1100, DAMAGE_MAGIC)
-    ts.name = "Maokai"
   end
   
 function Menu()  
@@ -199,6 +212,7 @@ function Menu()
           menu:addSubMenu("Maokai: Jungle Clear", "jungle")
             menu.jungle:addParam("junglekey", "Jungle Clear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("Z"))
             menu.jungle:addParam("useQ", "Use Q-Spell", SCRIPT_PARAM_ONOFF, true)
+            menu.jungle:addParam("useW", "Use W-Spell", SCRIPT_PARAM_ONOFF, true)
             menu.jungle:addParam("useE", "Use E-Spell", SCRIPT_PARAM_ONOFF, true)
 
           menu:addSubMenu("Maokai: Killsteal", "killsteal")
@@ -221,7 +235,6 @@ function Menu()
             menu.extra:addParam("stun", "Auto-Interrupt Important Spells", SCRIPT_PARAM_ONOFF, true)
             menu.extra:addParam("debug", "Debug", SCRIPT_PARAM_ONOFF, false)
 
-      --[PermaShow]--
       menu.combo:permaShow("combokey")
       menu.harass:permaShow("harasskey")
 end
@@ -279,50 +292,64 @@ end
 -------------------------------------------------
 --[Combo]--
 function Combo()
-  local Enemies = GetEnemyHeroes
-  local target  = ts.target
+  if menu.combo.useW and Wready then CastW() end
+  if menu.combo.useQ and Qready then CastQ() end
+  if menu.combo.useE and Eready then CastE() end
+end
 
-  if target and not target.dead then
-    if target and menu.combo.useQ and GetDistanceSqr(target) <= Qrange^2 and Qready then
+function CastQ()
+  if target and GetDistance(target) < Qrange then
       if not menu.extra.prediction then
         local CastPosition, HitChance, Position = VP:GetLineCastPosition(target, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
-        if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
+        if HitChance >= 1 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
       else
-         local pos, info = Prodiction.GetPrediction(target, Qrange, Qspeed, Qdelay, Qwidth)
-         if pos then
-          CastSpell(_Q, pos.x, pos.z)
-         end
+        local pos, info = Prodiction.GetPrediction(target, Qrange, Qspeed, Qdelay, Qwidth)
+        if pos and info.hitchance > 0 then
+            CastSpell(_Q, pos.x, pos.z)
+        end
       end
+  end
+end
             
         
-    end
-    if target and menu.combo.useW and GetDistanceSqr(target) <= Wrange^2 and Wready then
+function CastW()
+    if target and GetDistance(target) < Wrange then
       CastSpell(_W, target)
     end
-    if target and menu.combo.useE and GetDistanceSqr(target) <= Erange^2 and Eready then
+end
+
+function CastE()
+    local EspeedDist = 1500-GetDistance(target)
+    if target and GetDistance(target) < Erange then
       if not menu.extra.prediction then
-        EspeedDist = 1500-GetDistance(target)
-        AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Edelay, Ewidth, Erange, EspeedDist, myHero)
-        if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 2 then
-          CastSpell(_E, AOECastPosition.x, AOECastPosition.z) end
+        local AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Edelay, Ewidth, Erange, EspeedDist, myHero)
+        if nTargets >= 1 and GetDistance(AOECastPosition) <= Erange and MainTargetHitChance >= 1 then
+          CastSpell(_E, AOECastPosition.x, AOECastPosition.z)
+        end
       else
-         local pos, info = Prodiction.GetPrediction(target, Erange, Espeed, Edelay, Ewidth)
-         if pos then
+         local pos, info = Prodiction.GetCircularAOEPrediction(target, Erange, EspeedDist, Edelay, Ewidth)
+         if pos and info.hitchance > 0 and GetDistance(pos) < Erange then
           CastSpell(_E, pos.x, pos.z)
          end
       end
     end
-  end
 end
+
 
 -------------------------------------------------
 -------------------------------------------------
 --[Harass]--
 function Harass()
-  local Enemies = GetEnemyHeroes
-  local target = ts.target
   if menu.harass.mana > (myHero.mana / myHero.maxMana) * 100 then return end
-    if target and menu.harass.useQ and GetDistanceSqr(target) <= Qrange^2 and Qready then
+  if target == nil then return end
+  
+  if menu.harass.useQ and Qready then HarassQ() end
+  if menu.harass.useW and Wready then HarassW() end
+  if menu.harass.useE and Eready then HarassE() end
+  
+end
+function HarassQ()
+    if target and GetDistanceSqr(target) <= Qrange^2 then
       if not menu.extra.prediction then
         local CastPosition, HitChance, Position = VP:GetLineCastPosition(target, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
         if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
@@ -333,10 +360,16 @@ function Harass()
          end
       end
     end
-    if target and menu.combo.useW and GetDistanceSqr(target) <= Wrange^2 and Wready then
+end
+
+function HarassW()
+    if target and GetDistanceSqr(target) <= Wrange^2 then
       CastSpell(_W, target)
     end
-    if target and menu.combo.useE and GetDistanceSqr(target) <= Erange^2 and Eready then
+end
+    
+function HarassE()
+    if target and GetDistanceSqr(target) <= Erange^2 then
       if not menu.extra.prediction then
         EspeedDist = 1500-GetDistance(target)
         AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(target, Edelay, Ewidth, Erange, EspeedDist, myHero)
@@ -379,9 +412,12 @@ end
 function JungleClear()
   local JungleMob = GetJungleMob()
   if JungleMob ~= nil then
+    if JungleMob and menu.jungle.useW and GetDistanceSqr(JungleMob) < Wrange^2 and Wready then
+      CastSpell(_W, JungleMob)
+    end
     if JungleMob and menu.jungle.useQ and GetDistanceSqr(JungleMob) <= Qrange^2 and Qready then
         local CastPosition, HitChance, Position = VP:GetLineCastPosition(JungleMob, Qdelay, Qwidth, Qrange, Qspeed, myHero) 
-      if HitChance >= 2 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
+      if HitChance >= 1 then CastSpell(_Q, CastPosition.x, CastPosition.z) end
     end
     if JungleMob and menu.jungle.useE and GetDistanceSqr(JungleMob) <= Erange^2 and Eready then
       AOECastPosition, MainTargetHitChance, nTargets = VP:GetCircularAOECastPosition(JungleMob, Edelay, Ewidth, Erange, Espeed, myHero)
@@ -600,9 +636,6 @@ function OnProcessSpell(unit, spell)
   end
 end
 
-
-
-
 function OnGainBuff(unit, buff)
   if unit and unit.charName == myHero.charName and buff.name == "MaokaiDrain3" then
      MaokaiROn = true
@@ -618,27 +651,34 @@ function OnLoseBuff(unit, buff)
 end
 
 
-function CheckEnemies() -- R logic that should work with new update
-  EnemysInR = AreaEnemyCount(myHero, Rwidth)
-  if menu.combo.useR and Rready and not MaokaiROn and EnemysInR >= menu.combo.minR then
+function CheckEnemies()
+  EnemysInR = CountEnemies(Rwidth, myHero)
+  if menu.combo.useR and Rready and menu.combo.combokey and not MaokaiROn and EnemysInR >= menu.combo.minR then
     CastSpell(_R)
   end
 end
 
-function AreaEnemyCount(Spot, Range)
-  local count = 0
-  for _, enemy in pairs(GetEnemyHeroes()) do
-    if enemy and not enemy.dead and enemy.visible and GetDistance(Spot, enemy) <= Range then
-      count = count + 1
+function CountEnemies(range, unit)
+    local Enemies = 0
+    for _, enemy in ipairs(GetEnemyHeroes()) do
+        if ValidTarget(enemy) and GetDistance(enemy, unit) < (range or math.huge) then
+            Enemies = Enemies + 1
+        end
     end
-  end            
-  return count
+    return Enemies
 end
 
 
 function ManaChecks()
-
   if MaokaiROn and myHero.mana/myHero.maxMana < menu.combo.manaR/100 then 
     CastSpell(_R)
   end
+end
+
+function OnBugsplat()
+  UpdateWeb(false, ScriptName, id, HWID)
+end
+
+function OnUnload()
+  UpdateWeb(false, ScriptName, id, HWID)
 end
