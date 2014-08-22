@@ -8,7 +8,7 @@ require 'Sourcelib'
 
 --[AUTOUPDATER]--
 
-local version = "2.0"
+local version = "2.1"
 local author = "Teecolz"
 
 local AUTOUPDATE = true
@@ -157,7 +157,7 @@ function Variables()
 
   AARange = 125
 
-  Qrange = 600
+  Qrange = menu.extra.Qrange
   Qwidth = 110 
   Qspeed = 1200
   Qdelay = 0.5
@@ -198,19 +198,25 @@ function Menu()
             menu.combo:addParam("minR", "Min Enemys for (R)", SCRIPT_PARAM_SLICE, 1, 0, 5, 0)
             menu.combo:addParam("manaR", "Turn off R at % Mana", SCRIPT_PARAM_SLICE, 0, 0, 100)
 
+          menu:addSubMenu("Maokai: Gank", "gank")
+            menu.gank:addParam("gankkey", "Gank",    SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
+            menu.gank:addParam("useQ", "Use Q-Spell",  SCRIPT_PARAM_ONOFF, true)
+            menu.gank:addParam("useW", "Use W-Spell",  SCRIPT_PARAM_ONOFF, true)
+            menu.gank:addParam("useE", "Use E-Spell",  SCRIPT_PARAM_ONOFF, true)
+
           menu:addSubMenu("Maokai: Harass", "harass")
-            menu.harass:addParam("harasskey", "Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
+            menu.harass:addParam("harasskey", "Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("Z"))
             menu.harass:addParam("useQ", "Use Q-Spell", SCRIPT_PARAM_ONOFF, true)
             menu.harass:addParam("useE", "Use E-Spell", SCRIPT_PARAM_ONOFF, true)
             menu.harass:addParam("mana", "Dont Harass if mana < %", SCRIPT_PARAM_SLICE, 0, 0, 100)
             
           menu:addSubMenu("Maokai: Lane Clear", "lane")
-            menu.lane:addParam("lanekey", "Lane Clear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("Z"))
+            menu.lane:addParam("lanekey", "Lane Clear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
             menu.lane:addParam("useQ", "Use Q-Spell", SCRIPT_PARAM_ONOFF, true)
             menu.lane:addParam("useE", "Use E-Spell", SCRIPT_PARAM_ONOFF, true)
             
           menu:addSubMenu("Maokai: Jungle Clear", "jungle")
-            menu.jungle:addParam("junglekey", "Jungle Clear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("Z"))
+            menu.jungle:addParam("junglekey", "Jungle Clear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
             menu.jungle:addParam("useQ", "Use Q-Spell", SCRIPT_PARAM_ONOFF, true)
             menu.jungle:addParam("useW", "Use W-Spell", SCRIPT_PARAM_ONOFF, true)
             menu.jungle:addParam("useE", "Use E-Spell", SCRIPT_PARAM_ONOFF, true)
@@ -219,13 +225,14 @@ function Menu()
             menu.killsteal:addParam("killstealQ", "Use Q-Spell to Killsteal", SCRIPT_PARAM_ONOFF, true)
             menu.killsteal:addParam("killstealE", "Use E-Spell to Killsteal", SCRIPT_PARAM_ONOFF, true)
             menu.killsteal:addParam("killstealR", "Use R-Spell to Killsteal When its up", SCRIPT_PARAM_ONOFF, true)
+          
           menu:addSubMenu("Maokai: Drawings", "draw")
             menu.draw:addParam("drawAA", "Draw AA Range", SCRIPT_PARAM_ONOFF, false)
-            menu.draw:addParam("drawQ", "Draw Q Range",   SCRIPT_PARAM_ONOFF, true)
+            menu.draw:addParam("drawQ", "Draw Q Range",   SCRIPT_PARAM_ONOFF, false)
             menu.draw:addParam("drawW", "Draw W Range",   SCRIPT_PARAM_ONOFF, true)
-            menu.draw:addParam("drawE", "Draw E Range",   SCRIPT_PARAM_ONOFF, true)
+            menu.draw:addParam("drawE", "Draw E Range",   SCRIPT_PARAM_ONOFF, false)
             menu.draw:addParam("drawR", "Draw R Range",   SCRIPT_PARAM_ONOFF, true)
-            menu.draw:addParam("aftercombo", "Draw Ranges When on CD",   SCRIPT_PARAM_ONOFF, false)
+            menu.draw:addParam("aftercombo", "Draw Ranges When on CD",   SCRIPT_PARAM_ONOFF, true)
 
           menu:addSubMenu("Maokai: Extras", "extra")
             menu.extra:addParam("autolevel", "AutoLevel Spells", SCRIPT_PARAM_ONOFF, false)
@@ -233,9 +240,11 @@ function Menu()
             menu.extra:addParam("autoW", "Auto W under Turrets", SCRIPT_PARAM_ONOFF, false)
             menu.extra:addParam("gapClose", "Auto-Knockback Gapclosers", SCRIPT_PARAM_ONOFF, true)
             menu.extra:addParam("stun", "Auto-Interrupt Important Spells", SCRIPT_PARAM_ONOFF, true)
+            menu.extra:addParam("Qrange", "Q Range Slider", SCRIPT_PARAM_SLICE, 600, 1, 600, 0)  
             menu.extra:addParam("debug", "Debug", SCRIPT_PARAM_ONOFF, false)
 
       menu.combo:permaShow("combokey")
+      menu.gank:permaShow("gankkey")
       menu.harass:permaShow("harasskey")
 end
 
@@ -254,12 +263,16 @@ function OnTick()
   if menu.extra.autolevel then
     autoLevelSetSequence(levelSequence)
   end
+  Qrange = menu.extra.Qrange
   iSOW:EnableAttacks()
   
   target = ts.target
 
   if menu.combo.combokey then
     Combo()
+  end
+  if menu.gank.gankkey then
+    Gank()
   end
   if menu.harass.harasskey then
     Harass()
@@ -290,11 +303,17 @@ end
 
 -------------------------------------------------
 -------------------------------------------------
---[Combo]--
+--[Combo and Gank]--
 function Combo()
   if menu.combo.useW and Wready then CastW() end
   if menu.combo.useQ and Qready then CastQ() end
   if menu.combo.useE and Eready then CastE() end
+end
+
+function Gank()
+  if menu.gank.useW and Wready then CastW() end
+  if menu.gank.useE and Eready and not Wready then CastE() end
+  if menu.gank.useQ and Qready and not EReady and not WReady then CastQ() end
 end
 
 function CastQ()
